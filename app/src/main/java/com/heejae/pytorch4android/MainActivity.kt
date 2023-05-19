@@ -23,6 +23,11 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.tooling.preview.Preview
 import com.heejae.pytorch4android.ui.theme.Pytorch4androidTheme
+import org.opencv.android.OpenCVLoader
+import org.opencv.android.Utils
+import org.opencv.core.Core
+import org.opencv.imgproc.Imgproc
+import org.opencv.osgi.OpenCVInterface
 import org.pytorch.LiteModuleLoader
 import org.pytorch.Module
 import java.io.File
@@ -32,6 +37,12 @@ import java.io.IOException
 
 
 class MainActivity : ComponentActivity() {
+    
+    init {
+        val isIntialized = OpenCVLoader.initDebug()
+        val d = Log.d(TAG, "isIntialized = $isIntialized")
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -86,7 +97,9 @@ fun App(context: Context) {
         RembgButton(onclick = {
             if (mainImg != null && module != null) {
                 val outputs = runInference(mainImg, module)
-                setMainImg(floatArrayToGrayscaleBitmap(outputs, 320, 320))
+                val maskImg = floatArrayToGrayscaleBitmap(outputs, 320, 320)
+                val rembgImg = createRembgImage(mainImg, maskImg)
+                setMainImg(rembgImg)
             }
         })
         if (mainImg != null) {
@@ -94,6 +107,7 @@ fun App(context: Context) {
         }
     }
 }
+
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
